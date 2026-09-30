@@ -25,6 +25,7 @@ textarea{width:100%;height:185px;background:transparent;border:0;outline:0;resiz
 .cont{width:100%;border:0;border-radius:20px;padding:18px;color:#fff;background:linear-gradient(90deg,#7438e8,#5949f3);font-size:18px;font-weight:800}.cont.stop{background:linear-gradient(90deg,#c52348,#ff394a)}
 .sim{background:#171719;border-radius:26px;padding:24px;text-align:center;margin-top:28px}.ring{width:150px;height:150px;border-radius:50%;margin:22px auto;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,#6b42ff 0,#6b42ff 43%,#322467 44%,#191522 70%);font-size:52px}
 .simState{font-size:20px;font-weight:800;margin-bottom:16px}.simSrc{text-align:left;font-size:20px;line-height:1.5;min-height:95px}.simOut{text-align:left;font-size:28px;font-weight:800;line-height:1.45;min-height:95px;margin-top:14px}
+.modeTag{display:inline-block;padding:5px 9px;border-radius:999px;background:#27272a;color:#d4d4d8;font-size:12px;margin-left:6px}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2a2a2d;color:#fff;padding:10px 15px;border-radius:12px;opacity:0;pointer-events:none;transition:.2s;z-index:20}.toast.show{opacity:1}
 @media(max-width:420px){.screen{padding-left:14px;padding-right:14px}.title{font-size:36px}.box{height:250px}.tile{padding:16px;font-size:17px}}
 </style>
@@ -32,7 +33,7 @@ textarea{width:100%;height:185px;background:transparent;border:0;outline:0;resiz
 <body>
 <section id="home" class="screen">
   <div class="top"><button class="gear" id="gear">⚙</button></div>
-  <div class="title">翻译</div><div class="sub">中文 ⇄ 印度尼西亚语</div>
+  <div class="title">翻译</div><div class="sub">中文 ⇄ 印度尼西亚语 · 准确优先 · 男声播报</div>
   <div class="box">
     <textarea id="input" placeholder="请说话或输入需要翻译的文字"></textarea>
     <div class="langrow"><div class="pill">简体中文　⇄　印尼语</div><button class="mic" id="mic">🎙</button></div>
@@ -42,21 +43,21 @@ textarea{width:100%;height:185px;background:transparent;border:0;outline:0;resiz
     <button class="tile g" id="dialogueBtn"><span class="roundIcon">💬</span>对话翻译</button>
     <button class="tile p" id="simBtn"><span class="roundIcon">〽</span>同声传译</button>
   </div>
-  <div class="note"><b>推荐：对话翻译</b><span>你说中文后立即读出印尼语；对方说印尼语后立即翻成中文。</span></div>
+  <div class="note"><b>准确优先模式</b><span>屏幕会实时显示识别中的文字，但只有当一句话识别稳定后才作为正式译文并朗读，避免“边听边猜”造成错误。</span></div>
 </section>
 
 <section id="dialogue" class="screen hidden">
-  <div class="head"><button class="back" data-back>‹</button><div><div class="headTitle">对话翻译</div><div class="headSub">中文 ⇄ Bahasa Indonesia</div></div><div class="spacer"></div></div>
-  <div class="engine" id="engine1"><strong>语音引擎：</strong>准备中</div>
-  <div class="state"><div class="main" id="dialogState">点一方开始说话</div><div class="small">不用单独授权麦克风；第一次说话时 Chrome 会自动弹出权限</div></div>
-  <div class="turn cn"><div><div class="cap">🇨🇳 你说中文</div><div class="src" id="cnSrc">……</div></div><div><div class="cap">给对方听</div><div class="dst" id="idDst">……</div></div><div class="actions"><button class="btn" id="cnTalk">🎙 我说中文</button><button class="btn" id="idReplay">🔊 重播印尼语</button></div></div>
-  <div class="turn id"><div><div class="cap">🇮🇩 对方说印尼语</div><div class="src" id="idSrc">……</div></div><div><div class="cap">翻译给你</div><div class="dst" id="zhDst">……</div></div><div class="actions"><button class="btn green" id="idTalk">🎙 对方说印尼语</button><button class="btn" id="zhReplay">🔊 重播中文</button></div></div>
+  <div class="head"><button class="back" data-back>‹</button><div><div class="headTitle">对话翻译</div><div class="headSub">中文 ⇄ Bahasa Indonesia <span class="modeTag">男声</span></div></div><div class="spacer"></div></div>
+  <div class="engine" id="engine1"><strong>翻译引擎：</strong>检测中</div>
+  <div class="state"><div class="main" id="dialogState">点一方开始说话</div><div class="small">先确认识别原文，再生成正式译文并用男声朗读</div></div>
+  <div class="turn cn"><div><div class="cap">🇨🇳 你说中文 · 识别原文</div><div class="src" id="cnSrc">……</div></div><div><div class="cap">给对方听 · Bahasa Indonesia</div><div class="dst" id="idDst">……</div></div><div class="actions"><button class="btn" id="cnTalk">🎙 我说中文</button><button class="btn" id="idReplay">🔊 重播印尼语</button></div></div>
+  <div class="turn id"><div><div class="cap">🇮🇩 对方说印尼语 · 原文</div><div class="src" id="idSrc">……</div></div><div><div class="cap">翻译给你 · 中文</div><div class="dst" id="zhDst">……</div></div><div class="actions"><button class="btn green" id="idTalk">🎙 对方说印尼语</button><button class="btn" id="zhReplay">🔊 重播中文</button></div></div>
   <button class="cont" id="continuous">▶ 开始自动轮流对话</button>
 </section>
 
 <section id="sim" class="screen hidden">
-  <div class="head"><button class="back" data-back>‹</button><div><div class="headTitle">同声传译</div><div class="headSub">中文 → 印尼语 · 边说边显示</div></div><div class="spacer"></div></div>
-  <div class="engine" id="engine2"><strong>语音引擎：</strong>准备中</div>
+  <div class="head"><button class="back" data-back>‹</button><div><div class="headTitle">同声传译</div><div class="headSub">中文 → 印尼语 · 实时字幕 + 稳定后朗读</div></div><div class="spacer"></div></div>
+  <div class="engine" id="engine2"><strong>翻译引擎：</strong>检测中</div>
   <div class="sim"><div class="cap">连续监听中文</div><div class="ring" id="simMic">🎙</div><div class="simState" id="simState">点麦克风开始</div><div class="simSrc" id="simSrc">……</div><div class="simOut" id="simOut">……</div></div>
 </section>
 <div class="toast" id="toast"></div>
@@ -66,14 +67,16 @@ textarea{width:100%;height:185px;background:transparent;border:0;outline:0;resiz
 const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
 const synth=window.speechSynthesis;
 const $=id=>document.getElementById(id);
-let rec=null, stopping=false, speaking=false, continuous=false, simActive=false, lastId='', lastZh='', previewTimer=null;
-let localSupportCache={};
+let rec=null, stopping=false, speaking=false, continuous=false, simActive=false, lastId='', lastZh='';
+let zhIdTranslator=null,idZhTranslator=null,translatorStatus='fallback';
+let previewTimer=null,previewSeq=0;
 
 function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),1800)}
 function show(id){stopEverything();['home','dialogue','sim'].forEach(x=>$(x).classList.toggle('hidden',x!==id))}
 document.querySelectorAll('[data-back]').forEach(b=>b.onclick=()=>show('home'));
-$('dialogueBtn').onclick=()=>show('dialogue');$('simBtn').onclick=()=>show('sim');
-$('gear').onclick=()=>toast('已设置：女性/自然语音优先');
+$('dialogueBtn').onclick=async()=>{show('dialogue');await prepareTranslators($('engine1'))};
+$('simBtn').onclick=async()=>{show('sim');await prepareTranslators($('engine2'))};
+$('gear').onclick=()=>toast('准确优先 · 男声播报已开启');
 
 function stopRecognition(){
  if(!rec)return;
@@ -83,104 +86,151 @@ function stopRecognition(){
 }
 function stopEverything(){continuous=false;simActive=false;stopRecognition();if(synth)synth.cancel();speaking=false;$('continuous').classList.remove('stop');$('continuous').textContent='▶ 开始自动轮流对话';$('simState').textContent='点麦克风开始'}
 
-async function decideLocal(lang,engineEl){
- if(!SR){engineEl.innerHTML='<strong>语音引擎：</strong>此浏览器不支持';return false}
- if(localSupportCache[lang]!==undefined)return localSupportCache[lang];
- if(typeof SR.available!=='function'){engineEl.innerHTML='<strong>语音引擎：</strong>Chrome 在线识别';localSupportCache[lang]=false;return false}
+async function createBrowserTranslator(sourceLanguage,targetLanguage){
+ if(!('Translator' in self))return null;
  try{
-  const s=await SR.available({langs:[lang],processLocally:true,quality:'dictation'});
-  if(s==='available'){engineEl.innerHTML='<strong>语音引擎：</strong>本机识别（更快）';localSupportCache[lang]=true;return true}
-  if((s==='downloadable'||s==='downloading')&&typeof SR.install==='function'){
-    engineEl.innerHTML='<strong>语音引擎：</strong>正在准备本机语言包…';
-    const ok=await SR.install({langs:[lang],processLocally:true,quality:'dictation'});
-    if(ok){engineEl.innerHTML='<strong>语音引擎：</strong>本机识别（更快）';localSupportCache[lang]=true;return true}
-  }
- }catch(e){}
- engineEl.innerHTML='<strong>语音引擎：</strong>Chrome 在线识别';localSupportCache[lang]=false;return false
+   const avail=await Translator.availability({sourceLanguage,targetLanguage});
+   if(avail==='unavailable')return null;
+   const t=await Translator.create({
+     sourceLanguage,targetLanguage,
+     monitor(m){m.addEventListener('downloadprogress',e=>toast('正在准备离线翻译 '+Math.round(e.loaded*100)+'%'))}
+   });
+   return t;
+ }catch(e){return null}
 }
-
-function chooseVoice(lang){
+async function prepareTranslators(engineEl){
+ if(zhIdTranslator&&idZhTranslator){engineEl.innerHTML='<strong>翻译引擎：</strong>浏览器 AI 翻译 · 准确优先';return}
+ engineEl.innerHTML='<strong>翻译引擎：</strong>正在准备…';
+ try{
+  const pair=await Promise.all([createBrowserTranslator('zh','id'),createBrowserTranslator('id','zh')]);
+  zhIdTranslator=pair[0];idZhTranslator=pair[1];
+ }catch(e){}
+ if(zhIdTranslator&&idZhTranslator){
+   translatorStatus='browser';
+   document.querySelectorAll('.engine').forEach(x=>x.innerHTML='<strong>翻译引擎：</strong>浏览器 AI 翻译 · 准确优先');
+ }else{
+   translatorStatus='fallback';
+   document.querySelectorAll('.engine').forEach(x=>x.innerHTML='<strong>翻译引擎：</strong>在线翻译 · 准确优先');
+ }
+}
+function chooseMaleVoice(lang){
  if(!synth)return null;
- const code=lang==='id-ID'?'id':'zh';const vs=synth.getVoices().filter(v=>(v.lang||'').toLowerCase().startsWith(code));
- return vs.find(v=>/female|woman|natural|google|siti|dew|wavenet/i.test(v.name))||vs[0]||null
+ const code=lang==='id-ID'?'id':'zh';
+ const voices=synth.getVoices().filter(v=>(v.lang||'').toLowerCase().startsWith(code));
+ const male=voices.find(v=>/male|man|masculine|adi|ardi|andika|budi|dimas|wawan|yudi|yunxi|yunyang|yunjian|yunze/i.test(v.name));
+ const natural=voices.find(v=>/natural|google|wavenet|neural/i.test(v.name));
+ return male||natural||voices[0]||null
 }
 function speak(text,lang,done){
  if(!text){done&&done();return}
  speaking=true;stopRecognition();if(!synth){speaking=false;done&&done();return}
- synth.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=lang;u.rate=1;u.pitch=1.12;const v=chooseVoice(lang);if(v)u.voice=v;
- u.onend=()=>{speaking=false;setTimeout(()=>done&&done(),180)};u.onerror=()=>{speaking=false;done&&done()};synth.speak(u)
+ synth.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=lang;u.rate=.97;u.pitch=.78;const v=chooseMaleVoice(lang);if(v)u.voice=v;
+ u.onend=()=>{speaking=false;setTimeout(()=>done&&done(),170)};u.onerror=()=>{speaking=false;done&&done()};synth.speak(u)
+}
+async function fallbackTranslate(text,from,to){
+ const sl=from==='zh-CN'?'zh-CN':'id',tl=to==='zh-CN'?'zh-CN':'id';
+ const url='https://translate.googleapis.com/translate_a/single?client=gtx&dt=t&sl='+encodeURIComponent(sl)+'&tl='+encodeURIComponent(tl)+'&q='+encodeURIComponent(text.trim());
+ const r=await fetch(url);if(!r.ok)throw new Error('translate');const j=await r.json();return (j[0]||[]).map(x=>x?.[0]||'').join('').trim()
 }
 async function translate(text,from,to){
- if(!text.trim())return '';
- const sl=from==='zh-CN'?'zh-CN':'id',tl=to==='zh-CN'?'zh-CN':'id';
+ const q=text.trim();if(!q)return '';
  try{
-  const url='https://translate.googleapis.com/translate_a/single?client=gtx&dt=t&sl='+encodeURIComponent(sl)+'&tl='+encodeURIComponent(tl)+'&q='+encodeURIComponent(text.trim());
-  const r=await fetch(url);if(!r.ok)throw 0;const j=await r.json();return (j[0]||[]).map(x=>x?.[0]||'').join('').trim()
- }catch(e){toast('网络翻译失败');return ''}
+   if(translatorStatus==='browser'){
+     const t=from==='zh-CN'?zhIdTranslator:idZhTranslator;
+     if(t)return (await t.translate(q)).trim();
+   }
+   return await fallbackTranslate(q,from,to);
+ }catch(e){
+   try{return await fallbackTranslate(q,from,to)}catch(e2){toast('翻译失败，请检查网络');return ''}
+ }
 }
 
 async function listenOnce(lang,engineEl,onInterim,onFinal,onEnd){
- if(!SR){toast('请用最新版 Chrome');return}
+ if(!SR){toast('当前浏览器不支持语音识别');return}
  if(rec)stopRecognition();
- const useLocal=await decideLocal(lang,engineEl);
+ await prepareTranslators(engineEl);
  await new Promise(r=>setTimeout(r,180));
- const r=new SR();rec=r;r.lang=lang;r.interimResults=true;r.continuous=false;r.maxAlternatives=1;
- if('processLocally' in r)r.processLocally=useLocal;
- let gotAny=false;
- r.onstart=()=>{gotAny=true};
- r.onaudiostart=()=>{gotAny=true};
+ const r=new SR();rec=r;r.lang=lang;r.interimResults=true;r.continuous=false;r.maxAlternatives=3;
  r.onresult=e=>{
-  gotAny=true;let inter='',fin='';
-  for(let i=e.resultIndex;i<e.results.length;i++){const t=e.results[i][0].transcript;e.results[i].isFinal?fin+=t:inter+=t}
-  if(inter)onInterim&&onInterim(inter);if(fin)onFinal&&onFinal(fin)
+  let inter='',fin='';
+  for(let i=e.resultIndex;i<e.results.length;i++){
+    const best=e.results[i][0];const t=best.transcript;
+    if(e.results[i].isFinal)fin+=t;else inter+=t
+  }
+  if(inter)onInterim&&onInterim(inter);
+  if(fin)onFinal&&onFinal(fin)
  };
  r.onerror=e=>{
   if(e.error==='aborted'||stopping)return;
-  if(e.error==='not-allowed'){toast('请在 Chrome → 网站设置 → 麦克风 → 允许');return}
-  if(e.error==='language-not-supported'&&useLocal){localSupportCache[lang]=false;toast('本机语言包不可用，已改用在线识别');return}
+  if(e.error==='not-allowed'){toast('请在 Chrome 网站权限里允许麦克风');return}
   if(e.error!=='no-speech')toast('语音识别：'+e.error)
  };
  r.onend=()=>{if(rec===r)rec=null;onEnd&&onEnd()};
- try{r.start()}catch(e){toast('语音启动失败，请刷新页面再试')}
+ try{r.start()}catch(e){toast('麦克风启动失败')}
 }
 
 async function doZh(auto){
  $('dialogState').textContent='现在请你说中文';
  await listenOnce('zh-CN',$('engine1'),t=>$('cnSrc').textContent=t,async t=>{
-  $('cnSrc').textContent=t;const out=await translate(t,'zh-CN','id-ID');if(!out)return;lastId=out;$('idDst').textContent=out;
+  $('cnSrc').textContent=t;
+  const out=await translate(t,'zh-CN','id-ID');if(!out)return;
+  lastId=out;$('idDst').textContent=out;
   speak(out,'id-ID',()=>{if(continuous)doId(true)})
- },()=>{if(auto&&continuous&&!speaking)setTimeout(()=>doZh(true),250)})
+ },()=>{if(auto&&continuous&&!speaking)setTimeout(()=>doZh(true),260)})
 }
 async function doId(auto){
  $('dialogState').textContent='请让对方说印度尼西亚语';
  await listenOnce('id-ID',$('engine1'),t=>$('idSrc').textContent=t,async t=>{
-  $('idSrc').textContent=t;const out=await translate(t,'id-ID','zh-CN');if(!out)return;lastZh=out;$('zhDst').textContent=out;
+  $('idSrc').textContent=t;
+  const out=await translate(t,'id-ID','zh-CN');if(!out)return;
+  lastZh=out;$('zhDst').textContent=out;
   speak(out,'zh-CN',()=>{if(continuous)doZh(true)})
- },()=>{if(auto&&continuous&&!speaking)setTimeout(()=>doId(true),250)})
+ },()=>{if(auto&&continuous&&!speaking)setTimeout(()=>doId(true),260)})
 }
 $('cnTalk').onclick=()=>{continuous=false;doZh(false)};$('idTalk').onclick=()=>{continuous=false;doId(false)};
 $('idReplay').onclick=()=>speak(lastId,'id-ID');$('zhReplay').onclick=()=>speak(lastZh,'zh-CN');
-$('continuous').onclick=()=>{if(continuous){stopEverything();return}continuous=true;$('continuous').classList.add('stop');$('continuous').textContent='■ 停止自动轮流对话';doZh(true)};
+$('continuous').onclick=async()=>{
+ if(continuous){stopEverything();return}
+ await prepareTranslators($('engine1'));
+ continuous=true;$('continuous').classList.add('stop');$('continuous').textContent='■ 停止自动轮流对话';doZh(true)
+};
 
 $('mic').onclick=async()=>{
  $('input').value='';$('result').style.display='none';
- await listenOnce('zh-CN',$('engine1'),t=>$('input').value=t,async t=>{$('input').value=t;const out=await translate(t,'zh-CN','id-ID');$('resultText').textContent=out;$('result').style.display='block';speak(out,'id-ID')})
+ await prepareTranslators($('engine1'));
+ await listenOnce('zh-CN',$('engine1'),t=>$('input').value=t,async t=>{
+  $('input').value=t;const out=await translate(t,'zh-CN','id-ID');$('resultText').textContent=out;$('result').style.display='block';speak(out,'id-ID')
+ })
 };
-$('input').addEventListener('change',async e=>{const t=e.target.value.trim();if(!t)return;const cn=/[\u3400-\u9fff]/.test(t),out=await translate(t,cn?'zh-CN':'id-ID',cn?'id-ID':'zh-CN');$('resultText').textContent=out;$('result').style.display='block';speak(out,cn?'id-ID':'zh-CN')});
+$('input').addEventListener('change',async e=>{
+ const t=e.target.value.trim();if(!t)return;await prepareTranslators($('engine1'));
+ const cn=/[\u3400-\u9fff]/.test(t),out=await translate(t,cn?'zh-CN':'id-ID',cn?'id-ID':'zh-CN');
+ $('resultText').textContent=out;$('result').style.display='block';speak(out,cn?'id-ID':'zh-CN')
+});
 
 async function simLoop(){
  if(!simActive)return;
  $('simState').textContent='正在听中文…';
- let final='';
- await listenOnce('zh-CN',$('engine2'),async inter=>{
-   $('simSrc').textContent=(final+inter).trim();
+ await listenOnce('zh-CN',$('engine2'),inter=>{
+   $('simSrc').textContent=inter;
    clearTimeout(previewTimer);
-   previewTimer=setTimeout(async()=>{const o=await translate((final+inter).trim(),'zh-CN','id-ID');if(o)$('simOut').textContent=o},220)
+   const seq=++previewSeq;
+   previewTimer=setTimeout(async()=>{
+     if(!simActive||seq!==previewSeq)return;
+     const o=await translate(inter,'zh-CN','id-ID');
+     if(o&&seq===previewSeq)$('simOut').textContent=o
+   },translatorStatus==='browser'?280:520)
  },async fin=>{
-   final=(final+' '+fin).trim();$('simSrc').textContent=final;const o=await translate(fin,'zh-CN','id-ID');if(o){$('simOut').textContent=o;speak(o,'id-ID',()=>{if(simActive)setTimeout(simLoop,180)})}
+   $('simSrc').textContent=fin;
+   const o=await translate(fin,'zh-CN','id-ID');
+   if(o){$('simOut').textContent=o;speak(o,'id-ID',()=>{if(simActive)setTimeout(simLoop,170)})}
  },()=>{if(simActive&&!speaking)setTimeout(simLoop,220)})
 }
-$('simMic').onclick=()=>{if(simActive){simActive=false;stopRecognition();$('simState').textContent='已停止'}else{simActive=true;simLoop()}};
+$('simMic').onclick=async()=>{
+ if(simActive){simActive=false;stopRecognition();$('simState').textContent='已停止';return}
+ await prepareTranslators($('engine2'));
+ simActive=true;simLoop()
+};
 if(synth){synth.getVoices();synth.onvoiceschanged=()=>synth.getVoices()}
 })();
 </script>
