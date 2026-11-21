@@ -1,0 +1,1 @@
+5922eea4df9449149beb8ef415e313f92fe35a8d91a83ffd4a5ae6f068649562  goodnight-v5-build/output/GoodnightGadget-V5-AutoAdapt.apk
