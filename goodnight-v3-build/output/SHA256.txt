@@ -1,0 +1,1 @@
+359097656c46c51c7deca16603c2e5c17b1c134cb784367cb9f7b7ce4b794ece  goodnight-v3-build/output/GoodnightGadget-V3-debug.apk
