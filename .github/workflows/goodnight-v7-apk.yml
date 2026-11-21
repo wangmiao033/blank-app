@@ -46,8 +46,8 @@ jobs:
           src=goodnight-v7-build/project/app/build/outputs/apk/release/app-release-unsigned.apk
           test -s "$src"
           mkdir -p goodnight-v7-build/out
-          zipalign -p -f 4 "$src" goodnight-v7-build/out/GoodnightGadget-V7-aligned-unsigned.apk
-          zipalign -c -p 4 goodnight-v7-build/out/GoodnightGadget-V7-aligned-unsigned.apk
+          $ANDROID_HOME/build-tools/35.0.0/zipalign -p -f 4 "$src" goodnight-v7-build/out/GoodnightGadget-V7-aligned-unsigned.apk
+          $ANDROID_HOME/build-tools/35.0.0/zipalign -c -p 4 goodnight-v7-build/out/GoodnightGadget-V7-aligned-unsigned.apk
           sha256sum goodnight-v7-build/out/*.apk > goodnight-v7-build/out/SHA256.txt
       - uses: actions/upload-artifact@v4
         with:
