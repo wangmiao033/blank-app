@@ -1,0 +1,69 @@
+name: Build Goodnight Gadget V6 Android (unsigned)
+on:
+  push:
+    branches: [build/goodnight-v6-stable-beta-20261121]
+    paths:
+      - 'goodnight-v6-build/source.base64'
+      - '.github/workflows/goodnight-v6-unsigned.yml'
+permissions:
+  contents: read
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: ''
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+      - name: Install Android SDK
+        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+      - name: Reconstruct source archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p goodnight-v6/project
+          tr -d '\r\n' < goodnight-v6-build/source.base64 | base64 -d > /tmp/goodnight-v6-src.tar.xz
+          echo 'b124f5c785011c0fed8458a70e7cff0290fc030bf357e530ee0e173f961194aa  /tmp/goodnight-v6-src.tar.xz' | sha256sum -c -
+          tar xJf /tmp/goodnight-v6-src.tar.xz -C goodnight-v6/project
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('goodnight-v6/project/app/build.gradle')
+          s=p.read_text()
+          s=re.sub(r'    signingConfigs \{\n        beta \{.*?\n        \}\n    \}\n','',s,flags=re.S)
+          s=s.replace('release { minifyEnabled false; signingConfig signingConfigs.beta }',
+                      'release { minifyEnabled false }')
+          assert "applicationId 'com.goodnight.gadget'" in s
+          assert "signingConfig signingConfigs.beta" not in s
+          p.write_text(s)
+          m=Path('goodnight-v6/project/app/src/main/AndroidManifest.xml').read_text()
+          assert 'android.permission.INTERNET' not in m
+          assert 'android.permission.POST_NOTIFICATIONS' not in m
+          PY
+      - name: Compile unsigned APK
+        run: gradle -p goodnight-v6/project :app:assembleRelease --no-daemon
+      - name: Verify package identity and prepare offline signer
+        shell: bash
+        run: |
+          set -euo pipefail
+          a=goodnight-v6/project/app/build/outputs/apk/release/app-release-unsigned.apk
+          test -s "$a"
+          aapt dump badging "$a" | grep -F "name='com.goodnight.gadget'"
+          test -s "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar"
+          mkdir -p goodnight-v6/artifact
+          cp "$a" goodnight-v6/artifact/GoodnightGadget-V6-unsigned.apk
+          cp "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar" goodnight-v6/artifact/apksigner.jar
+          sha256sum goodnight-v6/artifact/* > goodnight-v6/artifact/SHA256.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GoodnightGadget-V6-unsigned-and-signer
+          path: goodnight-v6/artifact/
+          retention-days: 30
