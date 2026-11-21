@@ -1,0 +1,56 @@
+name: Build Goodnight V7 unsigned release APK
+on:
+  push:
+    branches: [build/goodnight-v7-20261121]
+    paths:
+      - 'goodnight-v7-build/source.base64'
+      - '.github/workflows/goodnight-v7-apk.yml'
+permissions:
+  contents: read
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: ''
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+      - name: Android SDK
+        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+      - name: Reconstruct isolated V7 Android project
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p goodnight-v7-build/project
+          tr -d '\r\n' < goodnight-v7-build/source.base64 | base64 -d > /tmp/goodnight-v7-source.tar.xz
+          echo '81200d5f3240acb23a6a9db3a69f15567025822e30c5db9bdc9bdea836ffc4ca  /tmp/goodnight-v7-source.tar.xz' | sha256sum -c -
+          tar xJf /tmp/goodnight-v7-source.tar.xz -C goodnight-v7-build/project
+          grep -F "applicationId 'com.goodnight.gadget'" goodnight-v7-build/project/app/build.gradle
+          grep -F 'versionCode 7' goodnight-v7-build/project/app/build.gradle
+      - name: Compile release APK without signing key
+        run: gradle -p goodnight-v7-build/project :app:assembleRelease --no-daemon --stacktrace
+      - name: ZIP align and inspect
+        shell: bash
+        run: |
+          set -euo pipefail
+          src=goodnight-v7-build/project/app/build/outputs/apk/release/app-release-unsigned.apk
+          test -s "$src"
+          mkdir -p goodnight-v7-build/out
+          zipalign -p -f 4 "$src" goodnight-v7-build/out/GoodnightGadget-V7-aligned-unsigned.apk
+          zipalign -c -p 4 goodnight-v7-build/out/GoodnightGadget-V7-aligned-unsigned.apk
+          sha256sum goodnight-v7-build/out/*.apk > goodnight-v7-build/out/SHA256.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GoodnightV7-Unsigned-Release-For-Local-V6-Signing
+          path: goodnight-v7-build/out/
+          retention-days: 7
