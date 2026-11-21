@@ -1,0 +1,51 @@
+/* V5 Adaptive Layout — works with the *available* WebView viewport, not device pixels. */
+:root{--ring-size:222px;--nav-height:64px;--content-pad:clamp(16px,4.5vw,28px)}
+html,body{height:100%;width:100%;min-width:0;overflow:hidden}
+.app{display:flex;flex-direction:column;height:100vh;height:100dvh;min-height:0;width:100%;max-width:580px;overflow:hidden}
+.screen{position:relative;inset:auto;flex:1 1 auto;min-height:0;max-height:none;overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:clamp(12px,2.3vh,23px) var(--content-pad) 16px;z-index:1}
+.page{min-height:0}
+.bottom{position:relative;inset:auto;flex:0 0 var(--nav-height);height:var(--nav-height);min-height:var(--nav-height);padding:0;z-index:2}
+.timer-ring{width:var(--ring-size);height:var(--ring-size);max-width:min(76vw,290px);max-height:min(76vw,290px)}
+.timer-area{min-width:0}
+.brand>div:nth-child(2){min-width:0;flex:1}
+.brand-sub,.brand-title{overflow-wrap:anywhere}
+.brand-side{white-space:nowrap;margin-left:4px}
+.preset,.sound,.step,.tab,.test-link,.setting-card,.utility{touch-action:manipulation}
+.preset{min-height:43px;height:auto;padding:10px 2px;line-height:1.3}
+.sound{min-height:58px;height:auto;padding:9px 1px;line-height:1.35}
+.primary{min-height:52px;height:auto;padding:14px 8px;line-height:1.25}
+.step{min-width:40px;min-height:40px;width:40px;height:40px}
+.setting-card{min-width:0}.setting-state{flex:0 0 auto}.setting-title,.setting-detail{overflow-wrap:anywhere}
+.tab{min-width:0;min-height:52px;padding:5px 3px;line-height:1.15}
+@media(max-width:360px){.brand-side{display:none}.screen{--content-pad:14px}.preset{font-size:11px}.counter{gap:7px}.sound span{font-size:10px}}
+@media(min-width:560px){.screen{padding-inline:30px}.app{border-radius:0}}
+/* Classes derive from usable viewport height. Minimum tap target sizes remain unchanged. */
+.app.compact .screen{padding-top:11px;padding-bottom:10px}
+.app.compact .greeting{margin-top:11px}
+.app.compact .permission{margin-top:10px;min-height:49px;padding:9px 12px}
+.app.compact .timer-area{padding:10px 0 0}
+.app.compact .field-header{margin:8px 0 7px}
+.app.compact .custom{margin-top:7px;min-height:34px}
+.app.compact .sounds{gap:7px}
+.app.compact .primary{margin-top:10px;min-height:47px}
+.app.compact .under-action{min-height:27px;padding-top:1px}
+.app.compact .noise-note{display:none}
+.app.tiny .brand{min-height:38px}
+.app.tiny .brand-mark{width:36px;height:36px}
+.app.tiny .greeting{margin-top:8px}
+.app.tiny h1{font-size:21px}
+.app.tiny .subtitle{font-size:11px}
+.app.tiny .permission{margin-top:7px;min-height:46px}
+.app.tiny .timer-area{padding:7px 0 0}
+.app.tiny .timer-icon{font-size:23px;margin-bottom:5px}
+.app.tiny .timer-caption{margin-top:6px}
+.app.tiny .timer-digits{font-size:36px}
+.app.tiny .timer-ring:before{inset:7px}
+.app.tiny .field-header{margin:7px 0 5px}
+.app.tiny .preset{min-height:40px}
+.app.tiny .sound{min-height:52px}
+.app.tiny .primary{margin-top:8px}
+.app.tiny .under-action{padding-top:0}
+.app.tiny .bottom{height:58px}
+@media(orientation:landscape){.app{max-width:100%}.screen{padding-top:9px}.brand-side{display:none}.greeting{margin-top:9px}.page-header{margin-top:12px}.timer-area{padding:9px 0 0}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
