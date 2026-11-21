@@ -1,0 +1,64 @@
+name: Compile Goodnight Gadget V3 Android APK
+on:
+  push:
+    branches:
+      - build/goodnight-v3-apk-20261121
+    paths:
+      - 'goodnight-v3-build/source.base64'
+      - '.github/workflows/goodnight-v3-apk.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'goodnight-v3-build/source.base64'
+      - '.github/workflows/goodnight-v3-apk.yml'
+permissions:
+  contents: write
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: ''
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+      - name: Install Android SDK
+        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+      - name: Verify archive and extract
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p goodnight-v3-build/project
+          tr -d '\r\n' < goodnight-v3-build/source.base64 | base64 -d > /tmp/goodnight-src.tar.xz
+          echo '3dde386f06e351f05c9307f53bdaf85cc1218ca7f667cd88e4a51d34d44e4c6e  /tmp/goodnight-src.tar.xz' | sha256sum -c -
+          tar xJf /tmp/goodnight-src.tar.xz -C goodnight-v3-build/project
+          test -f goodnight-v3-build/project/app/build.gradle
+      - name: Compile APK
+        run: gradle -p goodnight-v3-build/project :app:assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GoodnightGadget-V3-APK
+          path: goodnight-v3-build/project/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
+      - name: Save installable APK to this branch
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p goodnight-v3-build/output
+          cp goodnight-v3-build/project/app/build/outputs/apk/debug/app-debug.apk goodnight-v3-build/output/GoodnightGadget-V3-debug.apk
+          sha256sum goodnight-v3-build/output/GoodnightGadget-V3-debug.apk > goodnight-v3-build/output/SHA256.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add goodnight-v3-build/output/GoodnightGadget-V3-debug.apk goodnight-v3-build/output/SHA256.txt
+          git diff --cached --quiet || git commit -m 'build: store Goodnight Gadget V3 APK'
+          git push origin HEAD:refs/heads/build/goodnight-v3-apk-20261121
