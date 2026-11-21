@@ -56,7 +56,7 @@ jobs:
           set -euo pipefail
           a=goodnight-v6/project/app/build/outputs/apk/release/app-release-unsigned.apk
           test -s "$a"
-          aapt dump badging "$a" | grep -F "name='com.goodnight.gadget'"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$a" | grep -F "name='com.goodnight.gadget'"
           test -s "$ANDROID_HOME/build-tools/35.0.0/lib/apksigner.jar"
           mkdir -p goodnight-v6/artifact
           cp "$a" goodnight-v6/artifact/GoodnightGadget-V6-unsigned.apk
