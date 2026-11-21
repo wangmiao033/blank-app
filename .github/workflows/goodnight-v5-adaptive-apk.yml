@@ -1,0 +1,100 @@
+name: Build Goodnight Gadget V5 Auto Adaptive APK
+on:
+  push:
+    branches: [build/goodnight-v5-auto-adapt-20261121]
+    paths:
+      - 'goodnight-v5-build/auto-layout.css'
+      - 'goodnight-v5-build/auto-layout.js'
+      - '.github/workflows/goodnight-v5-adaptive-apk.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'goodnight-v5-build/**'
+      - '.github/workflows/goodnight-v5-adaptive-apk.yml'
+permissions:
+  contents: write
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: ''
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+      - name: Install SDK
+        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+      - name: Reconstruct verified V4 source and install auto-responsive V5 layout
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p goodnight-v5-build/project
+          tr -d '\r\n' < goodnight-v3-build/source.base64 | base64 -d > /tmp/goodnight-v4-source.tar.xz
+          echo 'b3face401ec9c093c244b02ad1dcd874dbcc89e0e7e1060b9956eaaa0dd38625  /tmp/goodnight-v4-source.tar.xz' | sha256sum -c -
+          tar xJf /tmp/goodnight-v4-source.tar.xz -C goodnight-v5-build/project
+          python3 - <<'PY'
+          from pathlib import Path
+          d=Path("goodnight-v5-build/project")
+          p=d/"app/src/main/assets/index.html"
+          css=Path("goodnight-v5-build/auto-layout.css").read_text()
+          js=Path("goodnight-v5-build/auto-layout.js").read_text()
+          s=p.read_text()
+          assert "</style>" in s and "</script>" in s
+          s=s.replace("</style>",css+"\n</style>",1).replace("</script>",js+"\n</script>",1)
+          p.write_text(s)
+          p=d/"app/src/main/java/com/goodnight/gadget/MainActivity.java"
+          s=p.read_text()
+          assert "getWindow().setStatusBarColor(" in s
+          s=s.replace("getWindow().setStatusBarColor(", """if (Build.VERSION.SDK_INT >= 30) {
+                      getWindow().setDecorFitsSystemWindows(false);
+                  } else {
+                      getWindow().getDecorView().setSystemUiVisibility(
+                          View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+                  }
+                  getWindow().setStatusBarColor(""",1)
+          s=s.replace('web.getSettings().setJavaScriptEnabled(true);',"""web.getSettings().setJavaScriptEnabled(true);
+                  web.getSettings().setUseWideViewPort(true);
+                  web.getSettings().setLoadWithOverviewMode(false);
+                  web.getSettings().setTextZoom(Math.max(100, Math.round(getResources().getConfiguration().fontScale * 100f)));""",1)
+          s=s.replace('getWindow().getDecorView().setSystemUiVisibility(0);',"""getWindow().getDecorView().setSystemUiVisibility(
+                      Build.VERSION.SDK_INT >= 30 ? 0 : (View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION));""",1)
+          p.write_text(s)
+          p=d/"app/build.gradle"
+          s=p.read_text()
+          assert "applicationId 'com.goodnight.gadget.v4'" in s
+          s=s.replace("applicationId 'com.goodnight.gadget.v4'","applicationId 'com.goodnight.gadget.v5'")
+          s=s.replace('versionCode 4','versionCode 5').replace("versionName '2.2.0-beta'","versionName '2.3.0-beta'")
+          p.write_text(s)
+          p=d/"app/src/main/AndroidManifest.xml"
+          p.write_text(p.read_text().replace("晚安神器 V4","晚安神器 V5"))
+          PY
+          grep -F "applicationId 'com.goodnight.gadget.v5'" goodnight-v5-build/project/app/build.gradle
+      - name: Compile APK
+        run: gradle -p goodnight-v5-build/project :app:assembleDebug --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GoodnightGadget-V5-AutoAdapt-APK
+          path: goodnight-v5-build/project/app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
+      - name: Store installable APK on isolated V5 branch
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p goodnight-v5-build/output
+          cp goodnight-v5-build/project/app/build/outputs/apk/debug/app-debug.apk goodnight-v5-build/output/GoodnightGadget-V5-AutoAdapt.apk
+          sha256sum goodnight-v5-build/output/GoodnightGadget-V5-AutoAdapt.apk > goodnight-v5-build/output/SHA256.txt
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add goodnight-v5-build/output/GoodnightGadget-V5-AutoAdapt.apk goodnight-v5-build/output/SHA256.txt
+          git diff --cached --quiet || git commit -m 'build: store verified Goodnight Gadget V5 APK'
+          git push origin HEAD:refs/heads/build/goodnight-v5-auto-adapt-20261121
