@@ -48,6 +48,22 @@ jobs:
           assert 'android.permission.INTERNET' not in m
           assert 'android.permission.POST_NOTIFICATIONS' not in m
           PY
+      - name: Use alternate Maven Central mirrors to avoid upstream throttling
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('goodnight-v6/project/settings.gradle')
+          s=p.read_text()
+          mirror='maven { url "https://maven-central.storage-download.googleapis.com/maven2/" }; maven { url "https://maven.aliyun.com/repository/public" }; '
+          s=s.replace('repositories { google(); mavenCentral(); gradlePluginPortal() }',
+                      'repositories { google(); '+mirror+'mavenCentral(); gradlePluginPortal() }')
+          s=s.replace('repositories { google(); mavenCentral() }',
+                      'repositories { google(); '+mirror+'mavenCentral() }')
+          p.write_text(s)
+          assert 'maven-central.storage-download.googleapis.com' in s
+          PY
       - name: Compile unsigned APK
         run: gradle -p goodnight-v6/project :app:assembleRelease --no-daemon
       - name: Verify package identity and prepare offline signer
