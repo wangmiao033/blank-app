@@ -1,7 +1,7 @@
 name: Build Goodnight Gadget V6 Android (unsigned)
 on:
   push:
-    branches: [build/goodnight-v6-stable-beta-20261121]
+    branches: [build/goodnight-v6-auto-setup-20261121]
     paths:
       - 'goodnight-v6-build/source.base64'
       - '.github/workflows/goodnight-v6-unsigned.yml'
