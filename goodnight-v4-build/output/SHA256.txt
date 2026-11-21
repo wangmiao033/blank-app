@@ -1,0 +1,1 @@
+c81757026cd21a00ea6b8e2a38940638afd9c1057605be44b1087059c6226b54  goodnight-v4-build/output/GoodnightGadget-V4-debug.apk
